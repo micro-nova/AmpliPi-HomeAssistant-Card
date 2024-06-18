@@ -5,7 +5,7 @@ const html = LitElement.prototype.html;
 
 import {CommonAmplipiCardEditor} from "./common-amplipi-editor";
 
-export class AmplipiZoneCardEditor extends CommonAmplipiCardEditor {
+export class AmplipiSourceCardEditor extends CommonAmplipiCardEditor {
     render() {
 
         let entities = [""].concat(
@@ -23,15 +23,15 @@ export class AmplipiZoneCardEditor extends CommonAmplipiCardEditor {
         @focusout=${this._nameChanged}
         ></input>
 
-        <h2>Zone</h2>
+        <h2>Source</h2>
         <div class="group-select">
             <select
             @change=${this._entityChanged}>
-            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Zone" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
+            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Source" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
             ${
                 entities.map(entity => {
                     if(this.hass.states[entity] !== undefined
-                        && this.hass.states[entity].attributes.amplipi_zone_id !== undefined
+                        && this.hass.states[entity].attributes.amplipi_source_id !== undefined
                         && entity != this._config.entity
                     ) {
                         return html `

@@ -28,7 +28,7 @@ export class AmplipiGroupCardEditor extends CommonAmplipiCardEditor {
         <div class="group-select">
             <select
             @change=${this._entityChanged}>
-            <option value="${this._config.entity}">${this._config.entity}</option>
+            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Group" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
             ${
                 entities.map(entity => {
                     if(this.hass.states[entity] !== undefined
@@ -36,7 +36,7 @@ export class AmplipiGroupCardEditor extends CommonAmplipiCardEditor {
                         && entity != this._config.entity
                     ) {
                         return html `
-                        <option value="${entity}">${entity}</option>`;
+                        <option value="${entity}">${this.hass.states[entity].attributes.friendly_name}</option>`;
                     }
                 })
             }

@@ -588,6 +588,8 @@ var _groupCard = require("./group-card");
 var _groupCardEditor = require("./group-card-editor");
 var _zoneCard = require("./zone-card");
 var _zoneCardEditor = require("./zone-card-editor");
+var _sourceCard = require("./source-card");
+var _sourceCardEditor = require("./source-card-editor");
 customElements.define("amplipi-group-card", (0, _groupCard.AmplipiGroupCard));
 customElements.define("amplipi-group-card-editor", (0, _groupCardEditor.AmplipiGroupCardEditor));
 window.customCards = window.customCards || [];
@@ -604,8 +606,16 @@ window.customCards.push({
     name: "Amplipi Zone",
     description: "Represents an AmpliPi zone."
 });
+customElements.define("amplipi-source-card", (0, _sourceCard.AmplipiSourceCard));
+customElements.define("amplipi-source-card-editor", (0, _sourceCardEditor.AmplipiSourceCardEditor));
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "amplipi-source-card",
+    name: "Amplipi Source",
+    description: "Represents an AmpliPi source."
+});
 
-},{"./group-card":"hioGL","./group-card-editor":"1O0y5","./zone-card":"aykBb","./zone-card-editor":"lcrXX"}],"hioGL":[function(require,module,exports) {
+},{"./group-card":"hioGL","./group-card-editor":"1O0y5","./zone-card":"aykBb","./zone-card-editor":"lcrXX","./source-card":"4AOpH","./source-card-editor":"4G5G1"}],"hioGL":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AmplipiGroupCard", ()=>AmplipiGroupCard);
@@ -620,6 +630,12 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         this._config = config;
         this._group = config.entity;
         this._num_zones = 0;
+    }
+    static getStubConfig() {
+        return {
+            name: "AmpliPi Group",
+            entity: ""
+        };
     }
     _findZoneNames() {
         const zone_ids = this._hass.states[this._group].attributes.amplipi_zones;
@@ -731,37 +747,7 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./common-amplipi-card":"bLmz7"}],"gkKU3":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}],"bLmz7":[function(require,module,exports) {
+},{"./common-amplipi-card":"bLmz7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bLmz7":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CommonAmplipiCard", ()=>CommonAmplipiCard);
@@ -792,11 +778,13 @@ class CommonAmplipiCard extends LitElement {
     get hass() {
         return this._hass;
     }
-    _loadSourcePlayer(source) {
+    _loadSourcePlayer(source, is_source = false) {
         if (source === undefined) return undefined;
         var source_id;
-        const source_num = source.split(" ")[1] - 1;
-        for (var [name, entity] of Object.entries(this._hass.states))if (entity.attributes.amplipi_source_id !== undefined && entity.attributes.amplipi_source_id === source_num) source_id = name;
+        if (!is_source) {
+            const source_num = source.split(" ")[1] - 1;
+            for (var [name, entity] of Object.entries(this._hass.states))if (entity.attributes.amplipi_source_id !== undefined && entity.attributes.amplipi_source_id === source_num) source_id = name;
+        } else source_id = source;
         let source_player_config = {
             "type": "custom:mini-media-player",
             "entity": source_id,
@@ -820,7 +808,7 @@ class CommonAmplipiCard extends LitElement {
         this.triggerRender();
         return player;
     }
-    _loadControlsPlayer(source) {
+    _loadControlsPlayer(source, is_source = false) {
         if (source === undefined) {
             this.source = undefined;
             return undefined;
@@ -828,13 +816,19 @@ class CommonAmplipiCard extends LitElement {
         var source_id;
         let supports_pause = false;
         let supports_stop = false;
-        const source_num = source.split(" ")[1] - 1;
-        for (var [name, entity] of Object.entries(this._hass.states))if (entity.attributes.amplipi_source_id !== undefined && entity.attributes.amplipi_source_id === source_num) {
-            source_id = name;
-            let features = entity.attributes.supported_features;
-            if ((features | 1) === features) supports_pause = true;
-            else if ((features | 4096) === features) supports_stop = true;
+        var features;
+        if (!is_source) {
+            const source_num = source.split(" ")[1] - 1;
+            for (var [name, entity] of Object.entries(this._hass.states))if (entity.attributes.amplipi_source_id !== undefined && entity.attributes.amplipi_source_id === source_num) {
+                source_id = name;
+                features = entity.attributes.supported_features;
+            }
+        } else {
+            source_id = source;
+            features = this._hass.states[source].attributes.supported_features;
         }
+        if ((features | 1) === features) supports_pause = true;
+        else if ((features | 4096) === features) supports_stop = true;
         this.source = source;
         let source_player_config = {
             "type": "custom:mini-media-player",
@@ -869,7 +863,37 @@ class CommonAmplipiCard extends LitElement {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1O0y5":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"1O0y5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AmplipiGroupCardEditor", ()=>AmplipiGroupCardEditor);
@@ -894,10 +918,10 @@ class AmplipiGroupCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardE
         <div class="group-select">
             <select
             @change=${this._entityChanged}>
-            <option value="${this._config.entity}">${this._config.entity}</option>
+            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Group" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
             ${entities.map((entity)=>{
             if (this.hass.states[entity] !== undefined && this.hass.states[entity].attributes.amplipi_zones !== undefined && entity != this._config.entity) return html`
-                        <option value="${entity}">${entity}</option>`;
+                        <option value="${entity}">${this.hass.states[entity].attributes.friendly_name}</option>`;
         })}
             </select>
         </div>
@@ -905,7 +929,7 @@ class AmplipiGroupCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardE
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./common-amplipi-editor":"3s1l3"}],"3s1l3":[function(require,module,exports) {
+},{"./common-amplipi-editor":"3s1l3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3s1l3":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CommonAmplipiCardEditor", ()=>CommonAmplipiCardEditor);
@@ -988,7 +1012,12 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
     setConfig(config) {
         this._config = config;
         this._zone = config.entity;
-        this._num_zones = 0;
+    }
+    static getStubConfig() {
+        return {
+            name: "AmpliPi Zone",
+            entity: ""
+        };
     }
     set hass(hass) {
         this._hass = hass;
@@ -1040,7 +1069,7 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./common-amplipi-card":"bLmz7"}],"lcrXX":[function(require,module,exports) {
+},{"./common-amplipi-card":"bLmz7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lcrXX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AmplipiZoneCardEditor", ()=>AmplipiZoneCardEditor);
@@ -1064,10 +1093,10 @@ class AmplipiZoneCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardEd
         <div class="group-select">
             <select
             @change=${this._entityChanged}>
-            <option value="${this._config.entity}">${this._config.entity}</option>
+            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Zone" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
             ${entities.map((entity)=>{
             if (this.hass.states[entity] !== undefined && this.hass.states[entity].attributes.amplipi_zone_id !== undefined && entity != this._config.entity) return html`
-                        <option value="${entity}">${entity}</option>`;
+                        <option value="${entity}">${this.hass.states[entity].attributes.friendly_name}</option>`;
         })}
             </select>
         </div>
@@ -1075,6 +1104,154 @@ class AmplipiZoneCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardEd
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./common-amplipi-editor":"3s1l3"}]},["farZc","8lqZg"], "8lqZg", "parcelRequire94c2")
+},{"./common-amplipi-editor":"3s1l3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4AOpH":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "AmplipiSourceCard", ()=>AmplipiSourceCard);
+var _commonAmplipiCard = require("./common-amplipi-card");
+const LitElement = Object.getPrototypeOf(customElements.get("ha-panel-lovelace"));
+const html = LitElement.prototype.html;
+class AmplipiSourceCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
+    static getConfigElement() {
+        return document.createElement("amplipi-source-card-editor");
+    }
+    setConfig(config) {
+        this._config = config;
+        this._source = config.entity;
+    }
+    static getStubConfig() {
+        return {
+            name: "AmpliPi Source",
+            entity: ""
+        };
+    }
+    set hass(hass) {
+        this._hass = hass;
+        if (this._media_player) this._media_player.hass = hass;
+        if (this._source_player) this._source_player.hass = hass;
+        if (this._helpers && this.source != this._hass.states[this._source].attributes.source) {
+            this._source_player = this._loadSourcePlayer(this._source, true);
+            this._controls_player = this._loadControlsPlayer(this._source, true);
+            this._zone_players = this._loadZonePlayers(this._findZoneNames());
+        }
+        if (this._controls_player) this._controls_player.hass = hass;
+        if (this._hassResolve) this._hassResolve();
+    }
+    render() {
+        if (!this._hass || !this._config) return html``;
+        return html`
+        <ha-card header="${this._config.name}" style="padding: 1.5rem;">
+        <b>Now Playing:</b> ${this._hass.states[this._source].attributes.media_album_artist} - ${this._hass.states[this._source].attributes.media_track}
+            ${this._media_player == undefined ? "" : this._media_player}
+            ${this._source_player == undefined ? "" : this._source_player}
+            ${this._zone_players == undefined ? "" : this._zone_players}
+            ${this._controls_player == undefined ? "" : this._controls_player}
+        </ha-card>`;
+    }
+    _loadZonePlayers(zone_names) {
+        let zone_player_configs = {};
+        let zone_players = [];
+        for (var zone of zone_names){
+            zone_player_configs.zone = {
+                "type": "custom:mini-media-player",
+                "entity": zone,
+                "group": "true",
+                "source": "icon",
+                "hide": {
+                    "power": "true",
+                    "controls": "true",
+                    "info": "true",
+                    "icon": "true",
+                    "source": "true"
+                }
+            };
+            if (this._config.media_config instanceof Object) zone_player_configs.zone = {
+                ...zone_player_configs.zone,
+                ...this._config.media_config
+            };
+            var zone_player;
+            zone_player = this._helpers.createCardElement(zone_player_configs.zone);
+            zone_player.hass = this._hass;
+            zone_players.push(zone_player);
+            this.triggerRender();
+        }
+        return zone_players;
+    }
+    _findZoneNames() {
+        const zone_ids = this._hass.states[this._source].attributes.amplipi_source_zones;
+        let zone_names = [];
+        Object.keys(this._hass.states).forEach((key)=>{
+            if (this._hass.states[key].attributes.amplipi_zone_id !== undefined && zone_ids.includes(this._hass.states[key].attributes.amplipi_zone_id)) zone_names.push(this._hass.states[key].entity_id);
+        });
+        return zone_names;
+    }
+    async addMediaPlayer() {
+        if (this._helpers === undefined) await new Promise((resolve)=>this._helpersResolve = resolve);
+        if (this._hass === undefined) await new Promise((resolve)=>this._hassResolve = resolve);
+        this._hassResolve = undefined;
+        this._helpersResolve = undefined;
+        let media_config = {
+            "type": "custom:mini-media-player",
+            "entity": this._source,
+            "group": "false",
+            "artwork": "cover",
+            "hide": {
+                "info": "true",
+                "source": "true",
+                "power": "true",
+                "controls": "true",
+                "name": "true",
+                "icon": "true"
+            }
+        };
+        if (this._config.media_config instanceof Object) media_config = {
+            ...media_config,
+            ...this._config.media_config
+        };
+        this._media_player = await this._helpers.createCardElement(media_config);
+        this._media_player.hass = this._hass;
+        this._source_player = this._loadSourcePlayer(this._source, true);
+        this._controls_player = this._loadControlsPlayer(this._source, true);
+        this._zone_players = this._loadZonePlayers(this._findZoneNames());
+        this.triggerRender();
+    }
+}
+
+},{"./common-amplipi-card":"bLmz7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4G5G1":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "AmplipiSourceCardEditor", ()=>AmplipiSourceCardEditor);
+var _commonAmplipiEditor = require("./common-amplipi-editor");
+const LitElement = Object.getPrototypeOf(customElements.get("ha-panel-lovelace"));
+const html = LitElement.prototype.html;
+class AmplipiSourceCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardEditor) {
+    render() {
+        let entities = [
+            ""
+        ].concat(Object.keys(this.hass.states).filter((eid)=>eid.substr(0, eid.indexOf(".")) === "media_player"));
+        if (!this.hass || !this._config) return html``;
+        return html`
+        <h2>Name</h2>
+        <input
+        .value=${this._config.name}
+        @focusout=${this._nameChanged}
+        ></input>
+
+        <h2>Source</h2>
+        <div class="group-select">
+            <select
+            @change=${this._entityChanged}>
+            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Source" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
+            ${entities.map((entity)=>{
+            if (this.hass.states[entity] !== undefined && this.hass.states[entity].attributes.amplipi_source_id !== undefined && entity != this._config.entity) return html`
+                        <option value="${entity}">${this.hass.states[entity].attributes.friendly_name}</option>`;
+        })}
+            </select>
+        </div>
+        `;
+    }
+}
+
+},{"./common-amplipi-editor":"3s1l3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["farZc","8lqZg"], "8lqZg", "parcelRequire94c2")
 
 //# sourceMappingURL=index.js.map

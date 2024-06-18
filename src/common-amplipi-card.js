@@ -36,18 +36,24 @@ export class CommonAmplipiCard extends LitElement {
         return this._hass;
     }
 
-    _loadSourcePlayer(source) {
+    _loadSourcePlayer(source, is_source = false) {
         if(source === undefined) {
             return undefined;
         }
         var source_id;
-        const source_num = source.split(' ')[1] - 1;
-        for (var [name, entity] of Object.entries(this._hass.states)) {
-            if(entity.attributes.amplipi_source_id !== undefined 
-                && entity.attributes.amplipi_source_id === source_num
-            ) {
-                source_id = name;
+
+        if(!is_source) {
+            const source_num = source.split(' ')[1] - 1;
+            for (var [name, entity] of Object.entries(this._hass.states)) {
+                if(entity.attributes.amplipi_source_id !== undefined 
+                    && entity.attributes.amplipi_source_id === source_num
+                ) {
+                    source_id = name;
+                }
             }
+        }
+        else {
+            source_id = source;
         }
         let source_player_config = {
             "type": "custom:mini-media-player",
@@ -75,7 +81,7 @@ export class CommonAmplipiCard extends LitElement {
     }
 
 
-    _loadControlsPlayer(source) {
+    _loadControlsPlayer(source, is_source = false) {
         if(source === undefined) {
             this.source = undefined;
             return undefined;
@@ -83,21 +89,28 @@ export class CommonAmplipiCard extends LitElement {
         var source_id;
         let supports_pause = false;
         let supports_stop = false;
-        const source_num = source.split(' ')[1] - 1;
-
-        for (var [name, entity] of Object.entries(this._hass.states)) {
-            if(entity.attributes.amplipi_source_id !== undefined 
-                && entity.attributes.amplipi_source_id === source_num
-            ) {
-                source_id = name;
-                let features = entity.attributes.supported_features;
-                if((features | 1) === features) {
-                    supports_pause = true;
-                }
-                else if((features | 4096) === features) {
-                    supports_stop = true;
+        var features;
+        if(!is_source) {
+            const source_num = source.split(' ')[1] - 1;
+            for (var [name, entity] of Object.entries(this._hass.states)) {
+                if(entity.attributes.amplipi_source_id !== undefined 
+                    && entity.attributes.amplipi_source_id === source_num
+                ) {
+                    source_id = name;
+                    features = entity.attributes.supported_features;
                 }
             }
+        } 
+        else {
+            source_id = source;
+            features = this._hass.states[source].attributes.supported_features;
+        }
+
+        if((features | 1) === features) {
+            supports_pause = true;
+        }
+        else if((features | 4096) === features) {
+            supports_stop = true;
         }
 
         this.source = source;

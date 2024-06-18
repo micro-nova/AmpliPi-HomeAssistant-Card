@@ -18,6 +18,10 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
 
     }
 
+    static getStubConfig() {
+        return {name: "AmpliPi Group", entity: ""};
+    }
+
     _findZoneNames() {
         const zone_ids = this._hass.states[this._group].attributes.amplipi_zones;
         let zone_names = [];

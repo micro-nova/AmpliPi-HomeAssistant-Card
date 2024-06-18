@@ -14,7 +14,10 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
     setConfig(config) {
         this._config = config;
         this._zone = config.entity;
-        this._num_zones = 0;
+    }
+
+    static getStubConfig() {
+        return {name: "AmpliPi Zone", entity: ""};
     }
 
     set hass(hass) {
