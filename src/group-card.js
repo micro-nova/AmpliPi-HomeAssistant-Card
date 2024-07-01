@@ -153,29 +153,31 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
         this._hassResolve = undefined;
         this._helpersResolve = undefined;
 
-        let media_config = {
-            "type": "custom:mini-media-player",
-            "entity": this._group,
-            "group": "false",
-            "info" : "scroll",
-            "artwork": "cover",
-            "source": "icon",
-            "hide": {
-                "power": "true",
-                "controls": "true"
+        if(this._group) {
+            let media_config = {
+                "type": "custom:mini-media-player",
+                "entity": this._group,
+                "group": "false",
+                "info" : "scroll",
+                "artwork": "cover",
+                "source": "icon",
+                "hide": {
+                    "power": "true",
+                    "controls": "true"
+                }
+            };
+    
+            if(this._config.media_config instanceof Object) {
+                media_config = {...media_config, ...this._config.media_config};
             }
-        };
-
-        if(this._config.media_config instanceof Object) {
-            media_config = {...media_config, ...this._config.media_config};
-        }
-
-        if(this._hass.states[this._group] !== undefined && this._hass.states[this._group].attributes.amplipi_zones !== undefined) {
-            this._media_player = await this._helpers.createCardElement(media_config);
-            this._media_player.hass = this._hass;
-            this._source_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
-            this._controls_player = this._loadControlsPlayer(this._hass.states[this._group].attributes.source);
-            this._zone_players = this._loadZonePlayers(this._findZoneNames());
+    
+            if(this._hass.states[this._group] !== undefined && this._hass.states[this._group].attributes.amplipi_zones !== undefined) {
+                this._media_player = await this._helpers.createCardElement(media_config);
+                this._media_player.hass = this._hass;
+                this._source_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+                this._controls_player = this._loadControlsPlayer(this._hass.states[this._group].attributes.source);
+                this._zone_players = this._loadZonePlayers(this._findZoneNames());
+            }
         }
         this.triggerRender();
     }

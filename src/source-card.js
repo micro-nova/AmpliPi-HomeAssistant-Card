@@ -113,31 +113,33 @@ export class AmplipiSourceCard extends CommonAmplipiCard {
 
         this._hassResolve = undefined;
         this._helpersResolve = undefined;
-
-        let media_config = {
-            "type": "custom:mini-media-player",
-            "entity": this._source,
-            "group": "false",
-            "artwork": "cover",
-            "hide": {
-                "info": "true",
-                "source": "true",
-                "power": "true",
-                "controls": "true",
-                "name": "true",
-                "icon": "true"
+        
+        if(this.source) {
+            let media_config = {
+                "type": "custom:mini-media-player",
+                "entity": this._source,
+                "group": "false",
+                "artwork": "cover",
+                "hide": {
+                    "info": "true",
+                    "source": "true",
+                    "power": "true",
+                    "controls": "true",
+                    "name": "true",
+                    "icon": "true"
+                }
+            };
+            if(this._config.media_config instanceof Object) {
+                media_config = {...media_config, ...this._config.media_config};
             }
-        };
 
-        if(this._config.media_config instanceof Object) {
-            media_config = {...media_config, ...this._config.media_config};
+            this._media_player = await this._helpers.createCardElement(media_config);
+            this._media_player.hass = this._hass;
+            this._source_player = this._loadSourcePlayer(this._source, true);
+            this._controls_player = this._loadControlsPlayer(this._source, true);
+            this._zone_players = this._loadZonePlayers(this._findZoneNames());    
         }
 
-        this._media_player = await this._helpers.createCardElement(media_config);
-        this._media_player.hass = this._hass;
-        this._source_player = this._loadSourcePlayer(this._source, true);
-        this._controls_player = this._loadControlsPlayer(this._source, true);
-        this._zone_players = this._loadZonePlayers(this._findZoneNames());
         this.triggerRender();
     }
 

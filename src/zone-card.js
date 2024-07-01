@@ -67,27 +67,32 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
         this._hassResolve = undefined;
         this._helpersResolve = undefined;
 
-        let media_config = {
-            "type": "custom:mini-media-player",
-            "entity": this._zone,
-            "group": "false",
-            "info" : "scroll",
-            "artwork": "cover",
-            "source": "icon",
-            "hide": {
-                "power": "true",
-                "controls": "true"
+        if(this._zone) {
+            let media_config = {
+                "type": "custom:mini-media-player",
+                "entity": this._zone,
+                "group": "false",
+                "info" : "scroll",
+                "artwork": "cover",
+                "source": "icon",
+                "hide": {
+                    "power": "true",
+                    "controls": "true"
+                }
+            };
+
+            if(this._config.media_config instanceof Object) {
+                media_config = {...media_config, ...this._config.media_config};
             }
-        };
 
-        if(this._config.media_config instanceof Object) {
-            media_config = {...media_config, ...this._config.media_config};
+            console.log("zone is " + this._zone)
+            this._media_player = await this._helpers.createCardElement(media_config);
+            this._media_player.hass = this._hass;
+            this._source_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);    
         }
+        
 
-        this._media_player = await this._helpers.createCardElement(media_config);
-        this._media_player.hass = this._hass;
-        this._source_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
-        this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);
-        this.triggerRender();
+       this.triggerRender();
     }
 }
