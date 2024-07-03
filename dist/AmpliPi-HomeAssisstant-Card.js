@@ -1143,14 +1143,14 @@ class AmplipiSourceCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         if (this._hassResolve) this._hassResolve();
     }
     render() {
-        if (!this._hass || !this._config) return html``;
+        if (!this._hass || !this._config) return html`...`;
         return html`
         <ha-card header="${this._config.name}" style="padding: 1.5rem;">
         <b>Now Playing:</b> ${this._hass.states[this._source].attributes.media_album_artist} - ${this._hass.states[this._source].attributes.media_track}
-            ${this._media_player == undefined ? "" : this._media_player}
-            ${this._source_player == undefined ? "" : this._source_player}
-            ${this._zone_players == undefined ? "" : this._zone_players}
-            ${this._controls_player == undefined ? "" : this._controls_player}
+            ${this._media_player == undefined ? "..." : this._media_player}
+            ${this._source_player == undefined ? "..." : this._source_player}
+            ${this._zone_players == undefined ? "..." : this._zone_players}
+            ${this._controls_player == undefined ? "..." : this._controls_player}
         </ha-card>`;
     }
     _loadZonePlayers(zone_names) {
@@ -1195,7 +1195,8 @@ class AmplipiSourceCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         if (this._hass === undefined) await new Promise((resolve)=>this._hassResolve = resolve);
         this._hassResolve = undefined;
         this._helpersResolve = undefined;
-        if (this.source) {
+        console.log(this._source);
+        if (this._source) {
             let media_config = {
                 "type": "custom:mini-media-player",
                 "entity": this._source,
@@ -1205,7 +1206,6 @@ class AmplipiSourceCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
                     "info": "true",
                     "source": "true",
                     "power": "true",
-                    "controls": "true",
                     "name": "true",
                     "icon": "true"
                 }
@@ -1214,7 +1214,7 @@ class AmplipiSourceCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
                 ...media_config,
                 ...this._config.media_config
             };
-            this._media_player = await this._helpers.createCardElement(media_config);
+            this._media_player = this._helpers.createCardElement(media_config);
             this._media_player.hass = this._hass;
             this._source_player = this._loadSourcePlayer(this._source, true);
             this._controls_player = this._loadControlsPlayer(this._source, true);
