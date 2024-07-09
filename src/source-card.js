@@ -114,7 +114,6 @@ export class AmplipiSourceCard extends CommonAmplipiCard {
         this._hassResolve = undefined;
         this._helpersResolve = undefined;
         
-        console.log(this._source);
         if(this._source) {
             let media_config = {
                 "type": "custom:mini-media-player",
