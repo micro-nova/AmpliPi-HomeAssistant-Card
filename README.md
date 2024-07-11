@@ -6,7 +6,7 @@ The rest of the guide assumes that Mini Media Player is fully installed.
 
 ## Using HACS
 
-The AmpliPi Custom Card can be installed in the same way as the [main AmpliPi HomeAssistant integration](https://github.com/micro-nova/hacs_amplipi) using HACS. You can follow the same instructions as the integration, and swap out the link to the repo with `https://github.com/micro-nova/AmpliPi-HomeAssisstant-Card`.
+The AmpliPi Custom Card can be installed in the same way as the [main AmpliPi HomeAssistant integration](https://github.com/micro-nova/hacs_amplipi) using HACS. You can follow the same instructions as the integration, and swap out the link to the repo with `https://github.com/micro-nova/AmpliPi-HomeAssistant-Card`.
 
 ## Manual Install
 1. Download `amplipi-cards-bundle.js` from the latest release on the GitHub repo.
