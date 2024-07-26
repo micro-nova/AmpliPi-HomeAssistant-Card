@@ -26,13 +26,19 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
             this._media_player.hass = hass;
         }
 
+        if(this._stream_player) {
+            this._stream_player.hass = hass;
+        }
+
+
         if(this._source_player) {
             this._source_player.hass = hass;
         }
 
         if(this._helpers 
             && this.source != this._hass.states[this._zone].attributes.source) {
-            this._source_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._source_player = this._loadAmpliPiSourcePlayer(this._group);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);
         }
 
@@ -51,7 +57,11 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
         <ha-card header="${this._config.name}" style="padding: 1.5rem;">
         <b>Now Playing:</b> ${this._hass.states[this._zone].attributes.media_album_artist} - ${this._hass.states[this._zone].attributes.media_track}
             ${this._media_player == undefined ? "" : this._media_player}
+            <br><b>Source:</b>
             ${this._source_player == undefined ? "" : this._source_player}
+            <b>Stream:</b>
+            ${this._stream_player == undefined ? "" : this._stream_player}
+            <hr>
             ${this._controls_player == undefined ? "" : this._controls_player}
         </ha-card>`;
     }
@@ -77,7 +87,8 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
                 "source": "icon",
                 "hide": {
                     "power": "true",
-                    "controls": "true"
+                    "controls": "true",
+                    "source": "true",
                 }
             };
 
@@ -88,10 +99,10 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
             console.log("zone is " + this._zone)
             this._media_player = await this._helpers.createCardElement(media_config);
             this._media_player.hass = this._hass;
-            this._source_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._source_player = this._loadAmpliPiSourcePlayer(this._zone);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);    
         }
-        
 
        this.triggerRender();
     }

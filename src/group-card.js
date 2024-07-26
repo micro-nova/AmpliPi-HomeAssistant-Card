@@ -41,13 +41,18 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
             this._media_player.hass = hass;
         }
 
+        if(this._stream_player) {
+            this._stream_player.hass = hass;
+        }
+
         if(this._source_player) {
             this._source_player.hass = hass;
         }
 
         if(this._helpers 
             && this.source != this._hass.states[this._group].attributes.source) {
-            this._source_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+                this._stream_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+                this._source_player = this._loadAmpliPiSourcePlayer(this._group);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._group].attributes.source);
         }
 
@@ -92,7 +97,12 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
             ? ""
             : this._hass.states[this._group].attributes.media_track}
             ${this._media_player == undefined ? "" : this._media_player}
+            <br>
+            <b>Source:</b>
             ${this._source_player == undefined ? "" : this._source_player}
+            <b>Stream:</b>
+            ${this._stream_player == undefined ? "" : this._stream_player}
+            <hr>
             ${this._zone_players == undefined ? "" : this._zone_players}
             ${this._controls_player == undefined ? "" : this._controls_player}
         </ha-card>`;
@@ -125,7 +135,8 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
                     "controls": "true",
                     "info": "true",
                     "icon": "true",
-                    "source": "true"
+                    "source": "true",
+                    "icon": "true"
                 }
             }
 
@@ -163,7 +174,8 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
                 "source": "icon",
                 "hide": {
                     "power": "true",
-                    "controls": "true"
+                    "controls": "true",
+                    "source": "true",
                 }
             };
     
@@ -174,7 +186,8 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
             if(this._hass.states[this._group] !== undefined && this._hass.states[this._group].attributes.amplipi_zones !== undefined) {
                 this._media_player = await this._helpers.createCardElement(media_config);
                 this._media_player.hass = this._hass;
-                this._source_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+                this._stream_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+                this._source_player = this._loadAmpliPiSourcePlayer(this._group);
                 this._controls_player = this._loadControlsPlayer(this._hass.states[this._group].attributes.source);
                 this._zone_players = this._loadZonePlayers(this._findZoneNames());
             }

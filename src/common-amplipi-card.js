@@ -35,6 +35,34 @@ export class CommonAmplipiCard extends LitElement {
     get hass() {
         return this._hass;
     }
+    
+    _loadAmpliPiSourcePlayer(entity) {
+
+        let player_config = {
+            "type": "custom:mini-media-player",
+            "entity": entity,
+            "group": "true",
+            "source": "full",
+            "hide": {
+                "volume": "true",
+                "controls": "true",
+                "info": "true",
+                "name": "true",
+                "power": "true",
+                "icon": "true"
+            }
+        }
+
+        if(this._config.media_config instanceof Object) {
+            player_config = {...player_config, ...this._config.media_config};
+        }
+
+        var player;
+        player = this._helpers.createCardElement(player_config);
+        player.hass = this._hass;
+        this.triggerRender();
+        return player
+    }
 
     _loadSourcePlayer(source, is_source = false) {
         if(source === undefined) {
@@ -65,7 +93,8 @@ export class CommonAmplipiCard extends LitElement {
                 "controls": "true",
                 "info": "true",
                 "name": "true",
-                "power": "true"
+                "power": "true",
+                "icon": "true"
             }
         }
 
@@ -114,7 +143,7 @@ export class CommonAmplipiCard extends LitElement {
         }
 
         this.source = source;
-        let source_player_config = {
+        let player_config = {
             "type": "custom:mini-media-player",
             "entity": source_id,
             "group": "true",
@@ -123,19 +152,19 @@ export class CommonAmplipiCard extends LitElement {
                 "info": "true",
                 "name": "true",
                 "power": "true",
-                "source": "true",
-                "icon": "true"
+                "icon": "true",
+                "source": "true"
             }
         }
 
         if(!supports_pause) {
-            source_player_config.hide.play_pause = true;
+            player_config.hide.play_pause = true;
             if(supports_stop) {
-                source_player_config.hide.play_stop = false;
+                player_config.hide.play_stop = false;
             }
         }
         else {
-            source_player_config.hide.play_stop = true;
+            player_config.hide.play_stop = true;
         }
 
 
@@ -144,7 +173,7 @@ export class CommonAmplipiCard extends LitElement {
         }
 
         var player;
-        player = this._helpers.createCardElement(source_player_config);
+        player = this._helpers.createCardElement(player_config);
         player.hass = this._hass;
         this.triggerRender();
         return player
