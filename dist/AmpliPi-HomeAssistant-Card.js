@@ -660,7 +660,7 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
             for (var zone of this._zone_players)if (zone) zone.hass = hass;
         }
         if (this._hassResolve) this._hassResolve();
-        if (hass.states[this._group].attributes.amplipi_zones.length != this._num_zones && this._zone_players) {
+        if (hass.states[this._group] != undefined && hass.states[this._group].attributes.amplipi_zones.length != this._num_zones && this._zone_players) {
             this.loadCardHelpers();
             this._zone_players = this._loadZonePlayers(this._findZoneNames());
             this._num_zones = this._zone_players.length;
@@ -689,7 +689,7 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         const zone_ids = this._hass.states[this._group].attributes.amplipi_zones;
         let zone_names = [];
         Object.keys(this._hass.states).forEach((key)=>{
-            if (this._hass.states[key].attributes.amplipi_zone_id !== undefined && zone_ids.includes(this._hass.states[key].attributes.amplipi_zone_id)) zone_names.push(this._hass.states[key].entity_id);
+            if (this._hass.states[key] != undefined && this._hass.states[key].attributes.amplipi_zone_id !== undefined && zone_ids.includes(this._hass.states[key].attributes.amplipi_zone_id)) zone_names.push(this._hass.states[key].entity_id);
         });
         return zone_names;
     }
@@ -956,7 +956,7 @@ class AmplipiGroupCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardE
         <div class="group-select">
             <select
             @change=${this._entityChanged}>
-            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Group" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
+            <option value="${this._config.entity}">${this._config.entity == "" || this.hass.states[this._config.entity] == undefined ? "Select a Group" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
             ${entities.map((entity)=>{
             if (this.hass.states[entity] !== undefined && this.hass.states[entity].attributes.amplipi_zones !== undefined && entity != this._config.entity) return html`
                         <option value="${entity}">${this.hass.states[entity].attributes.friendly_name}</option>`;
@@ -1062,7 +1062,7 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         if (this._media_player) this._media_player.hass = hass;
         if (this._stream_player) this._stream_player.hass = hass;
         if (this._source_player) this._source_player.hass = hass;
-        if (this._helpers && this.source != this._hass.states[this._zone].attributes.source) {
+        if (this._helpers && this._hass != undefined && this._hass.states[this._zone] != undefined && this.source != this._hass.states[this._zone].attributes.source) {
             this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
             this._source_player = this._loadAmpliPiSourcePlayer(this._group);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);
@@ -1142,7 +1142,7 @@ class AmplipiZoneCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardEd
         <div class="group-select">
             <select
             @change=${this._entityChanged}>
-            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Zone" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
+            <option value="${this._config.entity}">${this._config.entity == "" || this.hass.states[this._config.entity] == undefined ? "Select a Zone" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
             ${entities.map((entity)=>{
             if (this.hass.states[entity] !== undefined && this.hass.states[entity].attributes.amplipi_zone_id !== undefined && entity != this._config.entity) return html`
                         <option value="${entity}">${this.hass.states[entity].attributes.friendly_name}</option>`;
@@ -1295,7 +1295,7 @@ class AmplipiSourceCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCard
         <div class="group-select">
             <select
             @change=${this._entityChanged}>
-            <option value="${this._config.entity}">${this._config.entity == "" ? "Select a Source" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
+            <option value="${this._config.entity}">${this._config.entity == "" || this.hass.states[this._config.entity] == undefined ? "Select a Source" : this.hass.states[this._config.entity].attributes.friendly_name}</option>
             ${entities.map((entity)=>{
             if (this.hass.states[entity] !== undefined && this.hass.states[entity].attributes.amplipi_source_id !== undefined && entity != this._config.entity) return html`
                         <option value="${entity}">${this.hass.states[entity].attributes.friendly_name}</option>`;

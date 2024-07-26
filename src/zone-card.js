@@ -35,7 +35,7 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
             this._source_player.hass = hass;
         }
 
-        if(this._helpers 
+        if(this._helpers && this._hass != undefined && this._hass.states[this._zone] != undefined
             && this.source != this._hass.states[this._zone].attributes.source) {
             this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
             this._source_player = this._loadAmpliPiSourcePlayer(this._group);

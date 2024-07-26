@@ -68,7 +68,8 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
         }
         if(this._hassResolve) this._hassResolve();
 
-        if(hass.states[this._group].attributes.amplipi_zones.length != this._num_zones
+        if(hass.states[this._group] != undefined
+            && hass.states[this._group].attributes.amplipi_zones.length != this._num_zones
             && this._zone_players
         ) {
             this.loadCardHelpers();
@@ -113,7 +114,8 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
         let zone_names = [];
 
         Object.keys(this._hass.states).forEach((key) => {
-            if(this._hass.states[key].attributes.amplipi_zone_id !== undefined
+            if(this._hass.states[key] != undefined
+                && this._hass.states[key].attributes.amplipi_zone_id !== undefined
                 && zone_ids.includes(this._hass.states[key].attributes.amplipi_zone_id)) {
                     zone_names.push(this._hass.states[key].entity_id);
             }
