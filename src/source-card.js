@@ -49,10 +49,13 @@ export class AmplipiSourceCard extends CommonAmplipiCard {
             return html `...`;
         }
         return html `
-        <ha-card header="${this._config.name}" style="padding: 1.5rem;">
+        <ha-card header="${this._config.name}" style="padding: 1.5rem;"
         <b>Now Playing:</b> ${this._hass.states[this._source].attributes.media_album_artist} - ${this._hass.states[this._source].attributes.media_track}
             ${this._media_player == undefined ? "..." : this._media_player}
+            <br>
+            <b>Stream:</b>
             ${this._source_player == undefined ? "..." : this._source_player}
+            <hr>
             ${this._zone_players == undefined ? "..." : this._zone_players}
             ${this._controls_player == undefined ? "..." : this._controls_player}
         </ha-card>`;
@@ -125,7 +128,8 @@ export class AmplipiSourceCard extends CommonAmplipiCard {
                     "source": "true",
                     "power": "true",
                     "name": "true",
-                    "icon": "true"
+                    "icon": "true",
+                    "controls": "true",
                 }
             };
             if(this._config.media_config instanceof Object) {

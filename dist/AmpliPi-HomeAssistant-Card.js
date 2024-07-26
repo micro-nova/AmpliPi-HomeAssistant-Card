@@ -648,9 +648,11 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
     set hass(hass) {
         this._hass = hass;
         if (this._media_player) this._media_player.hass = hass;
+        if (this._stream_player) this._stream_player.hass = hass;
         if (this._source_player) this._source_player.hass = hass;
         if (this._helpers && this.source != this._hass.states[this._group].attributes.source) {
-            this._source_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+            this._stream_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+            this._source_player = this._loadAmpliPiSourcePlayer(this._group);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._group].attributes.source);
         }
         if (this._controls_player) this._controls_player.hass = hass;
@@ -673,7 +675,12 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         <b>Now Playing:</b> ${this._hass.states[this._group] == undefined ? "" : this._hass.states[this._group].attributes.media_album_artist}
             - ${this._hass.states[this._group] == undefined ? "" : this._hass.states[this._group].attributes.media_track}
             ${this._media_player == undefined ? "" : this._media_player}
+            <br>
+            <b>Source:</b>
             ${this._source_player == undefined ? "" : this._source_player}
+            <b>Stream:</b>
+            ${this._stream_player == undefined ? "" : this._stream_player}
+            <hr>
             ${this._zone_players == undefined ? "" : this._zone_players}
             ${this._controls_player == undefined ? "" : this._controls_player}
         </ha-card>`;
@@ -700,7 +707,8 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
                     "controls": "true",
                     "info": "true",
                     "icon": "true",
-                    "source": "true"
+                    "source": "true",
+                    "icon": "true"
                 }
             };
             if (this._config.media_config instanceof Object) zone_player_configs.zone = {
@@ -730,7 +738,8 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
                 "source": "icon",
                 "hide": {
                     "power": "true",
-                    "controls": "true"
+                    "controls": "true",
+                    "source": "true"
                 }
             };
             if (this._config.media_config instanceof Object) media_config = {
@@ -740,7 +749,8 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
             if (this._hass.states[this._group] !== undefined && this._hass.states[this._group].attributes.amplipi_zones !== undefined) {
                 this._media_player = await this._helpers.createCardElement(media_config);
                 this._media_player.hass = this._hass;
-                this._source_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+                this._stream_player = this._loadSourcePlayer(this._hass.states[this._group].attributes.source);
+                this._source_player = this._loadAmpliPiSourcePlayer(this._group);
                 this._controls_player = this._loadControlsPlayer(this._hass.states[this._group].attributes.source);
                 this._zone_players = this._loadZonePlayers(this._findZoneNames());
             }
@@ -749,7 +759,37 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
     }
 }
 
-},{"./common-amplipi-card":"bLmz7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bLmz7":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./common-amplipi-card":"bLmz7"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"bLmz7":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CommonAmplipiCard", ()=>CommonAmplipiCard);
@@ -780,6 +820,31 @@ class CommonAmplipiCard extends LitElement {
     get hass() {
         return this._hass;
     }
+    _loadAmpliPiSourcePlayer(entity) {
+        let player_config = {
+            "type": "custom:mini-media-player",
+            "entity": entity,
+            "group": "true",
+            "source": "full",
+            "hide": {
+                "volume": "true",
+                "controls": "true",
+                "info": "true",
+                "name": "true",
+                "power": "true",
+                "icon": "true"
+            }
+        };
+        if (this._config.media_config instanceof Object) player_config = {
+            ...player_config,
+            ...this._config.media_config
+        };
+        var player;
+        player = this._helpers.createCardElement(player_config);
+        player.hass = this._hass;
+        this.triggerRender();
+        return player;
+    }
     _loadSourcePlayer(source, is_source = false) {
         if (source === undefined) return undefined;
         var source_id;
@@ -787,7 +852,7 @@ class CommonAmplipiCard extends LitElement {
             const source_num = source.split(" ")[1] - 1;
             for (var [name, entity] of Object.entries(this._hass.states))if (entity.attributes.amplipi_source_id !== undefined && entity.attributes.amplipi_source_id === source_num) source_id = name;
         } else source_id = source;
-        let source_player_config = {
+        let source_player_config1 = {
             "type": "custom:mini-media-player",
             "entity": source_id,
             "group": "true",
@@ -797,15 +862,16 @@ class CommonAmplipiCard extends LitElement {
                 "controls": "true",
                 "info": "true",
                 "name": "true",
-                "power": "true"
+                "power": "true",
+                "icon": "true"
             }
         };
-        if (this._config.media_config instanceof Object) source_player_config = {
-            ...source_player_config,
+        if (this._config.media_config instanceof Object) source_player_config1 = {
+            ...source_player_config1,
             ...this._config.media_config
         };
         var player;
-        player = this._helpers.createCardElement(source_player_config);
+        player = this._helpers.createCardElement(source_player_config1);
         player.hass = this._hass;
         this.triggerRender();
         return player;
@@ -832,7 +898,7 @@ class CommonAmplipiCard extends LitElement {
         if ((features | 1) === features) supports_pause = true;
         else if ((features | 4096) === features) supports_stop = true;
         this.source = source;
-        let source_player_config = {
+        let player_config = {
             "type": "custom:mini-media-player",
             "entity": source_id,
             "group": "true",
@@ -841,20 +907,20 @@ class CommonAmplipiCard extends LitElement {
                 "info": "true",
                 "name": "true",
                 "power": "true",
-                "source": "true",
-                "icon": "true"
+                "icon": "true",
+                "source": "true"
             }
         };
         if (!supports_pause) {
-            source_player_config.hide.play_pause = true;
-            if (supports_stop) source_player_config.hide.play_stop = false;
-        } else source_player_config.hide.play_stop = true;
+            player_config.hide.play_pause = true;
+            if (supports_stop) player_config.hide.play_stop = false;
+        } else player_config.hide.play_stop = true;
         if (this._config.media_config instanceof Object) source_player_config = {
             ...source_player_config,
             ...this._config.media_config
         };
         var player;
-        player = this._helpers.createCardElement(source_player_config);
+        player = this._helpers.createCardElement(player_config);
         player.hass = this._hass;
         this.triggerRender();
         return player;
@@ -865,37 +931,7 @@ class CommonAmplipiCard extends LitElement {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}],"1O0y5":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1O0y5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AmplipiGroupCardEditor", ()=>AmplipiGroupCardEditor);
@@ -931,7 +967,7 @@ class AmplipiGroupCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardE
     }
 }
 
-},{"./common-amplipi-editor":"3s1l3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3s1l3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./common-amplipi-editor":"3s1l3"}],"3s1l3":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CommonAmplipiCardEditor", ()=>CommonAmplipiCardEditor);
@@ -1024,9 +1060,11 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
     set hass(hass) {
         this._hass = hass;
         if (this._media_player) this._media_player.hass = hass;
+        if (this._stream_player) this._stream_player.hass = hass;
         if (this._source_player) this._source_player.hass = hass;
         if (this._helpers && this.source != this._hass.states[this._zone].attributes.source) {
-            this._source_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._source_player = this._loadAmpliPiSourcePlayer(this._group);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);
         }
         if (this._controls_player) this._controls_player.hass = hass;
@@ -1038,7 +1076,11 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         <ha-card header="${this._config.name}" style="padding: 1.5rem;">
         <b>Now Playing:</b> ${this._hass.states[this._zone].attributes.media_album_artist} - ${this._hass.states[this._zone].attributes.media_track}
             ${this._media_player == undefined ? "" : this._media_player}
+            <br><b>Source:</b>
             ${this._source_player == undefined ? "" : this._source_player}
+            <b>Stream:</b>
+            ${this._stream_player == undefined ? "" : this._stream_player}
+            <hr>
             ${this._controls_player == undefined ? "" : this._controls_player}
         </ha-card>`;
     }
@@ -1057,7 +1099,8 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
                 "source": "icon",
                 "hide": {
                     "power": "true",
-                    "controls": "true"
+                    "controls": "true",
+                    "source": "true"
                 }
             };
             if (this._config.media_config instanceof Object) media_config = {
@@ -1067,14 +1110,15 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
             console.log("zone is " + this._zone);
             this._media_player = await this._helpers.createCardElement(media_config);
             this._media_player.hass = this._hass;
-            this._source_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
+            this._source_player = this._loadAmpliPiSourcePlayer(this._zone);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);
         }
         this.triggerRender();
     }
 }
 
-},{"./common-amplipi-card":"bLmz7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lcrXX":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./common-amplipi-card":"bLmz7"}],"lcrXX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AmplipiZoneCardEditor", ()=>AmplipiZoneCardEditor);
@@ -1109,7 +1153,7 @@ class AmplipiZoneCardEditor extends (0, _commonAmplipiEditor.CommonAmplipiCardEd
     }
 }
 
-},{"./common-amplipi-editor":"3s1l3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4AOpH":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./common-amplipi-editor":"3s1l3"}],"4AOpH":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AmplipiSourceCard", ()=>AmplipiSourceCard);
@@ -1145,10 +1189,13 @@ class AmplipiSourceCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
     render() {
         if (!this._hass || !this._config) return html`...`;
         return html`
-        <ha-card header="${this._config.name}" style="padding: 1.5rem;">
+        <ha-card header="${this._config.name}" style="padding: 1.5rem;"
         <b>Now Playing:</b> ${this._hass.states[this._source].attributes.media_album_artist} - ${this._hass.states[this._source].attributes.media_track}
             ${this._media_player == undefined ? "..." : this._media_player}
+            <br>
+            <b>Stream:</b>
             ${this._source_player == undefined ? "..." : this._source_player}
+            <hr>
             ${this._zone_players == undefined ? "..." : this._zone_players}
             ${this._controls_player == undefined ? "..." : this._controls_player}
         </ha-card>`;
@@ -1195,7 +1242,6 @@ class AmplipiSourceCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         if (this._hass === undefined) await new Promise((resolve)=>this._hassResolve = resolve);
         this._hassResolve = undefined;
         this._helpersResolve = undefined;
-        console.log(this._source);
         if (this._source) {
             let media_config = {
                 "type": "custom:mini-media-player",
@@ -1207,7 +1253,8 @@ class AmplipiSourceCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
                     "source": "true",
                     "power": "true",
                     "name": "true",
-                    "icon": "true"
+                    "icon": "true",
+                    "controls": "true"
                 }
             };
             if (this._config.media_config instanceof Object) media_config = {
