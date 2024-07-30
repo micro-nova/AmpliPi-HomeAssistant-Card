@@ -660,7 +660,7 @@ class AmplipiGroupCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
             for (var zone of this._zone_players)if (zone) zone.hass = hass;
         }
         if (this._hassResolve) this._hassResolve();
-        if (hass.states[this._group] != undefined && hass.states[this._group].attributes.amplipi_zones.length != this._num_zones && this._zone_players) {
+        if (hass.states[this._group] != undefined && hass.states[this._group].attributes.amplipi_zones != undefined && hass.states[this._group].attributes.amplipi_zones.length != this._num_zones && this._zone_players) {
             this.loadCardHelpers();
             this._zone_players = this._loadZonePlayers(this._findZoneNames());
             this._num_zones = this._zone_players.length;
@@ -1064,7 +1064,7 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
         if (this._source_player) this._source_player.hass = hass;
         if (this._helpers && this._hass != undefined && this._hass.states[this._zone] != undefined && this.source != this._hass.states[this._zone].attributes.source) {
             this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
-            this._source_player = this._loadAmpliPiSourcePlayer(this._group);
+            this._source_player = this._loadAmpliPiSourcePlayer(this._zone);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);
         }
         if (this._controls_player) this._controls_player.hass = hass;
@@ -1107,7 +1107,6 @@ class AmplipiZoneCard extends (0, _commonAmplipiCard.CommonAmplipiCard) {
                 ...media_config,
                 ...this._config.media_config
             };
-            console.log("zone is " + this._zone);
             this._media_player = await this._helpers.createCardElement(media_config);
             this._media_player.hass = this._hass;
             this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);

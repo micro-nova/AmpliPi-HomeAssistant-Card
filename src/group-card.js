@@ -69,6 +69,7 @@ export class AmplipiGroupCard extends CommonAmplipiCard {
         if(this._hassResolve) this._hassResolve();
 
         if(hass.states[this._group] != undefined
+            && hass.states[this._group].attributes.amplipi_zones != undefined
             && hass.states[this._group].attributes.amplipi_zones.length != this._num_zones
             && this._zone_players
         ) {

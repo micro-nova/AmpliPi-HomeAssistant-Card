@@ -38,7 +38,7 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
         if(this._helpers && this._hass != undefined && this._hass.states[this._zone] != undefined
             && this.source != this._hass.states[this._zone].attributes.source) {
             this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
-            this._source_player = this._loadAmpliPiSourcePlayer(this._group);
+            this._source_player = this._loadAmpliPiSourcePlayer(this._zone);
             this._controls_player = this._loadControlsPlayer(this._hass.states[this._zone].attributes.source);
         }
 
@@ -96,7 +96,6 @@ export class AmplipiZoneCard extends CommonAmplipiCard {
                 media_config = {...media_config, ...this._config.media_config};
             }
 
-            console.log("zone is " + this._zone)
             this._media_player = await this._helpers.createCardElement(media_config);
             this._media_player.hass = this._hass;
             this._stream_player = this._loadSourcePlayer(this._hass.states[this._zone].attributes.source);
