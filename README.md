@@ -2,7 +2,7 @@
 
 **This custom card requires Mini Media Player!** Before installing the AmpliPi custom cards, [download and install Mini Media Player](https://github.com/kalkih/mini-media-player), which can be found via the HACS searchbar. You also need to have the [main AmpliPi Home Assistant integration](https://github.com/micro-nova/hacs_amplipi/) in order for this card to function properly.
 
-![example.png](example.png)
+![src/example.png](example.png)
 
 The rest of the guide assumes that Mini Media Player is fully installed.
 
