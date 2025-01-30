@@ -53,11 +53,9 @@ export class CommonAmplipiCardEditor extends LitElement {
             padding: 16px;
             border: none;
             border-radius: 12px;
-            background-color: #DDDDDD;
         }
         
         select:hover {
-            background-color: #CCCCCC;
         }
 
         input{
@@ -65,7 +63,6 @@ export class CommonAmplipiCardEditor extends LitElement {
             padding: 16px;
             border: none;
             border-bottom: 2px solid blue;
-            background-color: #FFFFFF;
         }
     `;
 }
