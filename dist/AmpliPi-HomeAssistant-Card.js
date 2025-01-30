@@ -1032,6 +1032,7 @@ class CommonAmplipiCardEditor extends LitElement {
             border: none;
             border-bottom: 2px solid blue;
             background-color: #FFFFFF;
+            color: #000000;
         }
     `;
 }
