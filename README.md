@@ -4,6 +4,13 @@
 
 ![example.png](example.png)
 
+<p align=center> <i>The Three Cards: Group, Source, and Zone</i> </p>
+
+
+
+
+
+
 The rest of the guide assumes that Mini Media Player is fully installed.
 
 ## Using HACS
